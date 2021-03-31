@@ -19,14 +19,14 @@ TrajectoryLoader.py
 
 * getBatchBP(batch_size, bp_step)
 随机取一批用于BP模型训练的轨迹与真实点数据。
-轨迹长度为bp_step。取出的轨迹需要保证是连续的。
+轨迹长度为bp_step。取出的轨迹需要保证是连续的。  
 Returns:
 seq: shape of [batch_size, bp_step, 5].
 next_point: shape of [batch_size, 5].  
 
 * getBatchLSTM(batch_size, seq_length)
 随机取一批用于LSTM模型训练的轨迹与真实点数据。
-轨迹长度为seq_length。取出的轨迹需要保证是连续的。
+轨迹长度为seq_length。取出的轨迹需要保证是连续的。  
 Returns:
 seq: shape of [batch_size, seq_length, 5].  
 next_point: shape of [batch_size, 5].  
@@ -34,7 +34,7 @@ next_point: shape of [batch_size, 5].
 * getBatchSeq2Seq(batch_size, encoder_lenght, decoder_lenght)
 随机取一批用于LSTM模型训练的源轨迹与目标序列数据。
 轨迹长度为encoder_length和decoder_length。总轨迹需要是连续的。
-（这里seq_decoder的长度实际是decoder_length+1，因为seq_encoder的最后一位要用于输入）
+（这里seq_decoder的长度实际是decoder_length+1，因为seq_encoder的最后一位要用于输入）  
 Returns:
 seq_encoder: shape of [batch_size, encoder_length, 5].
 seq_decoder: shape of [batch_size, decoder_length+1, 5].  
@@ -51,7 +51,7 @@ TestLoader.py
 * getTestBP(batch_size, bp_step):
 随机取一批用于BP模型测试的轨迹与真实点数据。
 轨迹长度为bp_step。取出的轨迹需要保证是连续的。
-返回为测试序列与序列绝对坐标。
+返回为测试序列与序列绝对坐标。  
 Returns:
 x_test: sequence for testing. [Δtime, Δlng, Δlat, sog, cog]
 x_coordinates: coordinates of seq. [lng, lat]
@@ -59,7 +59,7 @@ x_coordinates: coordinates of seq. [lng, lat]
 * getTestLSTM(batch_size, seq_length):
 随机取一批用于LSTM模型测试的轨迹与真实点数据。
 轨迹长度为seq_length。取出的轨迹需要保证是连续的。
-返回为测试序列与序列绝对坐标。
+返回为测试序列与序列绝对坐标。  
 Returns:
 x_test: sequence for testing. [Δtime, Δlng, Δlat, sog, cog]
 x_coordinates: coordinates of seq. [lng, lat]
@@ -67,7 +67,7 @@ x_coordinates: coordinates of seq. [lng, lat]
 * getTestSeq2Seq(batch_size, encoder_lenght, decoder_lenght):
 随机取一批用于LSTM模型测试的源轨迹与目标序列数据。
 轨迹长度为encoder_length和decoder_length。总轨迹需要是连续的。
-返回为编码序列，编码序列绝对坐标，解码序列，解码序列绝对坐标。
+返回为编码序列，编码序列绝对坐标，解码序列，解码序列绝对坐标。  
 Returns:
 seq_encoder_test: encoder sequence for testing. [Δtime, Δlng, Δlat, sog, cog].
 seq_encoder_coordinates: coordinates of encoder seq. [lng, lat].
@@ -304,21 +304,21 @@ loss为解码器输出序列和真实序列的MSE（这里只选择Δt, Δlng, �
 
     * TestSeq2Seq
     进行Seq2Seq轨迹预测，用时序循环进行预测，保存预测点
-    返回预测点和平均loss
+    返回预测点和平均loss  
     Returns:
     pred [np.array(pred)]: The prediction of points. shape of [seq_length, 5].
     loss [tensor]: Root Mean Squre Error loss of prediction of points.
 
     * TestSeq2SeqAttention
     进行AttentionSeq2Seq轨迹预测，用时序循环进行预测，保存预测点
-    返回预测点和平均loss
+    返回预测点和平均loss  
     Returns:
     pred [np.array(pred)]: The prediction of points. shape of [seq_length, 5].
     loss [tensor]: Root Mean Squre Error loss of prediction of points.
 
     * TestLSTM
     进行LSTM轨迹预测，用时序循环进行预测，保存预测点
-    返回预测点和平均loss
+    返回预测点和平均loss  
     Returns:
     pred [np.array(pred)]: The prediction of points. shape of [seq_length, 5].
     loss [tensor]: Root Mean Squre Error loss of prediction of points.
