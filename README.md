@@ -27,6 +27,7 @@ next_point: shape of [batch_size, 5].
 * getBatchLSTM(batch_size, seq_length)
 随机取一批用于LSTM模型训练的轨迹与真实点数据。
 轨迹长度为seq_length。取出的轨迹需要保证是连续的。
+
 Returns:
 seq: shape of [batch_size, seq_length, 5].  
 next_point: shape of [batch_size, 5].  
@@ -35,6 +36,7 @@ next_point: shape of [batch_size, 5].
 随机取一批用于LSTM模型训练的源轨迹与目标序列数据。
 轨迹长度为encoder_length和decoder_length。总轨迹需要是连续的。
 （这里seq_decoder的长度实际是decoder_length+1，因为seq_encoder的最后一位要用于输入）
+
 Returns:
 seq_encoder: shape of [batch_size, encoder_length, 5].
 seq_decoder: shape of [batch_size, decoder_length+1, 5].  
@@ -68,6 +70,7 @@ x_coordinates: coordinates of seq. [lng, lat]
 随机取一批用于LSTM模型测试的源轨迹与目标序列数据。
 轨迹长度为encoder_length和decoder_length。总轨迹需要是连续的。
 返回为编码序列，编码序列绝对坐标，解码序列，解码序列绝对坐标。
+
 Returns:
 seq_encoder_test: encoder sequence for testing. [Δtime, Δlng, Δlat, sog, cog].
 seq_encoder_coordinates: coordinates of encoder seq. [lng, lat].
@@ -81,9 +84,7 @@ seq_decoder_coordinates: coordinates of decoder seq. [lng, lat].
 Model: "lstm"
 _________________________________________________________________
 Layer (type)                 Output Shape              Param #
-
 lstm_1 (LSTM)                multiple                  81408
-
 output_layer (Dense)         multiple                  645
 _________________________________________________________________
 Total params: 82,053
@@ -104,7 +105,6 @@ call:
 Model: "encoder"
 _________________________________________________________________
 Layer (type)                 Output Shape              Param #
-
 lstm (LSTM)                  multiple                  68608
 _________________________________________________________________
 
@@ -126,9 +126,7 @@ call:
 Model: "decoder"
 _________________________________________________________________
 Layer (type)                 Output Shape              Param #
-
 lstm_1 (LSTM)                multiple                  68608
-
 output_layer (Dense)         multiple                  645
 _________________________________________________________________
 Total params: 69,253
@@ -152,13 +150,9 @@ call:
 Model: "decoder_attention"   n_lstm = 128, attention_func = 'general'
 _________________________________________________________________
 Layer (type)                 Output Shape              Param #
-
 attention (Attention)        multiple                  16512
-
 lstm_1 (LSTM)                multiple                  68608
-
 wc_layer (Dense)             multiple                  32896
-
 output_layer (Dense)         multiple                  645
 _________________________________________________________________
 Total params: 118,661
@@ -305,6 +299,7 @@ loss为解码器输出序列和真实序列的MSE（这里只选择Δt, Δlng, �
     * TestSeq2Seq
     进行Seq2Seq轨迹预测，用时序循环进行预测，保存预测点
     返回预测点和平均loss
+    
     Returns:
     pred [np.array(pred)]: The prediction of points. shape of [seq_length, 5].
     loss [tensor]: Root Mean Squre Error loss of prediction of points.
@@ -312,6 +307,7 @@ loss为解码器输出序列和真实序列的MSE（这里只选择Δt, Δlng, �
     * TestSeq2SeqAttention
     进行AttentionSeq2Seq轨迹预测，用时序循环进行预测，保存预测点
     返回预测点和平均loss
+    
     Returns:
     pred [np.array(pred)]: The prediction of points. shape of [seq_length, 5].
     loss [tensor]: Root Mean Squre Error loss of prediction of points.
@@ -319,6 +315,7 @@ loss为解码器输出序列和真实序列的MSE（这里只选择Δt, Δlng, �
     * TestLSTM
     进行LSTM轨迹预测，用时序循环进行预测，保存预测点
     返回预测点和平均loss
+    
     Returns:
     pred [np.array(pred)]: The prediction of points. shape of [seq_length, 5].
     loss [tensor]: Root Mean Squre Error loss of prediction of points.
