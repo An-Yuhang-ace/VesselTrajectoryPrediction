@@ -2,6 +2,7 @@ import tensorflow as tf
 import numpy as np
 import Model
 import csv
+import time
 
 class TestLoader():
     def __init__(self):
@@ -142,3 +143,9 @@ class TestLoader():
             seq_decoder_coordinates = np.array(seq_decoder)[:, :, 5:]
         return seq_encoder_test, seq_encoder_coordinates, seq_decoder_test, seq_decoder_coordinates
 
+if __name__ == '__main__':
+    x = TestLoader()
+    start = time.clock()
+    x.loadTestTrajectory("./DataSet/test.csv")
+    end = time.clock()
+    print("running time: %s s" % (end-start))

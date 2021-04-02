@@ -8,8 +8,8 @@ from TrajectoryLoader import TrajectoryLoader
 
 # parameters for traning
 learnig_rate = 0.001
-num_batches = 100000
-batch_size = 256
+num_batches = 10000
+batch_size = 1024
 display_step = 50
 # parameters for seq2seq model
 n_lstm = 128
@@ -33,6 +33,13 @@ decoder_a(x, output[1:], output[0])
 encoder_a.summary()
 decoder_a.summary()
 
+# restore the last checkpoint
+checkpoint4 = tf.train.Checkpoint(EncoderAttention = encoder_a)
+checkpoint4.restore(tf.train.latest_checkpoint('./SaveEncoderAttention'))
+
+checkpoint5 = tf.train.Checkpoint(DecoderAttention = decoder_a)
+checkpoint5.restore(tf.train.latest_checkpoint('./SaveDecoderAttention'))
+
 #tensorboard
 summary_writer = tf.summary.create_file_writer('tensorboard')
 tf.summary.trace_on(profiler=True)
@@ -51,13 +58,11 @@ def RunOptimization(source_seq, target_seq_in, target_seq_out, step):
         states = encoder_outputs[1:]
         y_sample = 0
         for t in range(decoder_length):
-            '''
             if t == 0 or random.randint(0,1) == 0:
                 decoder_in = tf.expand_dims(target_seq_in[:, t], 1)
             else:
-                decoder_in = tf.expand_dims(y_sample, 1)  
-            '''         
-            decoder_in = tf.expand_dims(target_seq_in[:, t], 1)
+                decoder_in = tf.expand_dims(y_sample, 1)        
+            #decoder_in = tf.expand_dims(target_seq_in[:, t], 1)
             logit, de_state_h, de_state_c, _= decoder_a(decoder_in, states, encoder_outputs[0])
             # TODO scheduled sampling
             y_sample = logit

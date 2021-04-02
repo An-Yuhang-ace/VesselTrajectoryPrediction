@@ -150,10 +150,10 @@ def StepProcess(input, batch_size, seq_length, lstm_step):
 
 # Load test data
 test_loader = TestLoader()
-test_loader.loadTestTrajectory("./DataSet/TrajectoryMillion.csv")
+test_loader.loadTestTrajectory("./DataSet/test_fix.csv")
 
 source_length = 20
-target_length = 5
+target_length = 10
 
 
 source_seq, source_coordinates, target_seq, target_coordinates= test_loader.getTestSeq2Seq(batch_size, source_length, target_length)
@@ -226,6 +226,47 @@ kml.save('./Visualization/true.kml')
 
 
 # pred coordomates
+delta_lng = pred_lstm[:, 1]
+delta_lat = pred_lstm[:, 2]
+delta_lng = delta_lng * (test_loader.max_train_data[1] - test_loader.min_train_data[1]) + test_loader.min_train_data[1]
+delta_lat = delta_lat * (test_loader.max_train_data[2] - test_loader.min_train_data[2]) + test_loader.min_train_data[2]
+delta_lng = delta_lng.tolist()
+delta_lat = delta_lat.tolist()
+
+delta_lng_true = target_seq_out[0, :, 1]
+delta_lat_true = target_seq_out[0, :, 2]
+delta_lng_true = delta_lng_true * (test_loader.max_train_data[1] - test_loader.min_train_data[1]) + test_loader.min_train_data[1]
+delta_lat_true = delta_lat_true * (test_loader.max_train_data[2] - test_loader.min_train_data[2]) + test_loader.min_train_data[2]
+delta_lng_true = delta_lng_true.tolist()
+delta_lat_true = delta_lat_true.tolist()
+
+lng0 = lng_true[0]
+lat0 = lat_true[0]
+
+lng_pred = []
+lat_pred = []
+for i in range(len(delta_lng)):
+    lng = lng0 + delta_lng[i]
+    lat = lat0 + delta_lat[i]
+    lng_pred.append(lng)
+    lat_pred.append(lat)
+    lng0 = lng
+    lat0 = lat
+
+kml = simplekml.Kml(open=1)
+lng1 = lng_true[0]
+lat1 = lat_true[0]
+for i in range(len(lng_pred)):
+    lng2 = lng_pred[i]
+    lat2 = lat_pred[i]
+    name = '%d' %i
+    linestring = kml.newlinestring(name=name)
+    linestring.coords = [(lng1, lat1), (lng2, lat2)]
+    lng1 = lng2
+    lat1 = lat2
+kml.save('./Visualization/pred_lstm.kml')
+
+# pred coordomates
 delta_lng = pred_seq2seq[:, 1]
 delta_lat = pred_seq2seq[:, 2]
 delta_lng = delta_lng * (test_loader.max_train_data[1] - test_loader.min_train_data[1]) + test_loader.min_train_data[1]
@@ -253,19 +294,6 @@ for i in range(len(delta_lng)):
     lng0 = lng
     lat0 = lat
 
-lng0 = lng_true[0]
-lat0 = lat_true[0]
-
-lng_true1 = []
-lat_true1 = []
-for i in range(len(delta_lng)):
-    lng = lng0 + delta_lng_true[i]
-    lat = lat0 + delta_lat_true[i]
-    lng_true1.append(lng)
-    lat_true1.append(lat)
-    lng0 = lng
-    lat0 = lat   
-
 kml = simplekml.Kml(open=1)
 lng1 = lng_true[0]
 lat1 = lat_true[0]
@@ -277,19 +305,4 @@ for i in range(len(lng_pred)):
     linestring.coords = [(lng1, lat1), (lng2, lat2)]
     lng1 = lng2
     lat1 = lat2
-kml.save('./Visualization/pred.kml')
-
-'''
-kml = simplekml.Kml(open=1)
-lng1 = lng_true[0]
-lat1 = lat_true[0]
-for i in range(len(lng_true1)):
-    lng2 = lng_true1[i]
-    lat2 = lat_true1[i]
-    name = '%d' %i
-    linestring = kml.newlinestring(name=name)
-    linestring.coords = [(lng1, lat1), (lng2, lat2)]
-    lng1 = lng2
-    lat1 = lat2
-kml.save('./Visualization/true1.kml')
-'''
+kml.save('./Visualization/pred_seq.kml')

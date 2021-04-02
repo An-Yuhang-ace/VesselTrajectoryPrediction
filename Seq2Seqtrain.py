@@ -8,8 +8,8 @@ import Model
 
 # parameters for traning
 learnig_rate = 0.001
-num_batches = 100000
-batch_size = 256
+num_batches = 10000
+batch_size = 1024
 display_step = 50
 # parameters for seq2seq model
 n_lstm = 128
@@ -29,6 +29,13 @@ decoder(x, output[1:])
 encoder.summary()
 decoder.summary()
 
+# restore the lost checkpoint
+checkpoint2 = tf.train.Checkpoint(Encoder = encoder)
+checkpoint2.restore(tf.train.latest_checkpoint('./SaveEncoder'))
+
+checkpoint3 = tf.train.Checkpoint(Decoder = decoder)
+checkpoint3.restore(tf.train.latest_checkpoint('./SaveDecoder'))
+
 #tensorboard
 summary_writer = tf.summary.create_file_writer('tensorboard')
 tf.summary.trace_on(profiler=True)
@@ -47,13 +54,13 @@ def RunOptimization(source_seq, target_seq_in, target_seq_out, step):
         states = encoder_outputs[1:]
         y_sample = 0
         for t in range(decoder_length):
-            '''
+            
             if t == 0 or random.randint(0,1) == 0:
                 decoder_in = tf.expand_dims(target_seq_in[:, t], 1)
             else:
                 decoder_in = tf.expand_dims(y_sample, 1)
-            '''
-            decoder_in = tf.expand_dims(target_seq_in[:, t], 1)
+            
+            #decoder_in = tf.expand_dims(target_seq_in[:, t], 1)
             logit, de_state_h, de_state_c= decoder(decoder_in, states)
             y_sample = logit
             states = de_state_h, de_state_c

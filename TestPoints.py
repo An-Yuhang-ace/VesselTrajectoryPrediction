@@ -8,7 +8,7 @@ from TestLoader import TestLoader
 # network parameters
 n_lstm = 128
 lstm_step = 6
-batch_size = 300
+batch_size = 512
 
 
 # Restore LSTM model, seq2seq model and attention-seq2seq model.
@@ -137,10 +137,10 @@ def StepProcess(input, batch_size, seq_length, lstm_step):
 
 # Load test data
 test_loader = TestLoader()
-test_loader.loadTestTrajectory("./DataSet/TrajectoryMillion.csv")
+test_loader.loadTestTrajectory("./DataSet/test_fix.csv")
 
 source_length = 20
-target_testset = [5, 10]
+target_testset = [1, 5, 10]
 
 for target_length in target_testset:
     source_seq, source_coordinates, target_seq, target_coordinates= test_loader.getTestSeq2Seq(batch_size, source_length, target_length)

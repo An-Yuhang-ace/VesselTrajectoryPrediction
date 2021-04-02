@@ -5,9 +5,9 @@ from TrajectoryLoader import TrajectoryLoader
 import Model
 
 # parameters for mini-batch gradient descent training
-learning_rate = 0.0005
+learning_rate = 0.001
 num_batches = 10000
-batch_size = 256
+batch_size = 1024
 display_step = 100
 # parameters for LSTM network
 n_lstm = 128
@@ -24,6 +24,10 @@ neural_net = Model.LSTM(n_lstm, lstm_step, batch_size)
 x = np.zeros((batch_size, seq_length-lstm_step, lstm_step*5), dtype= np.float32)
 neural_net(x)
 neural_net.summary()
+
+# restore
+checkpoint1 = tf.train.Checkpoint(LSTM_network = neural_net)
+checkpoint1.restore(tf.train.latest_checkpoint('./SaveLSTM'))
 
 #tensorboard
 summary_writer = tf.summary.create_file_writer('tensorboard')
