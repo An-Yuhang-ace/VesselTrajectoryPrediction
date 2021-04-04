@@ -147,6 +147,45 @@ call:
 
 ### Attention
 
+* Attention layer whose function is 'dot'
+
+Model: "attention"  n_lstm = 128, attention_func = 'dot'
+_________________________________________________________________
+Layer (type)                 Output Shape              Param #
+
+Total params: 0
+Trainable params: 0
+Non-trainable params: 0
+_________________________________________________________________
+
+* Attention layer whose function is 'general'
+
+Model: "attention"  n_lstm = 128, attention_func = 'general'
+_________________________________________________________________
+Layer (type)                 Output Shape              Param #
+
+dense (Dense)                multiple                  16512
+
+Total params: 16,512
+Trainable params: 16,512
+Non-trainable params: 0
+_________________________________________________________________
+
+* Attention layer whose function is 'concat'
+
+Model: "attention"  n_lstm = 128, attention_func = 'concat'
+_________________________________________________________________
+Layer (type)                 Output Shape              Param #
+
+dense (Dense)                multiple                  32896
+_________________________________________________________________
+dense_1 (Dense)              multiple                  129
+
+Total params: 33,025
+Trainable params: 33,025
+Non-trainable params: 0
+_________________________________________________________________
+
 ### DecoderAttention
 
 Model: "decoder_attention"   n_lstm = 128, attention_func = 'general'
