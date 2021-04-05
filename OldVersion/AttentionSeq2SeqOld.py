@@ -25,7 +25,7 @@ optimizer = tf.keras.optimizers.Adam(learnig_rate)
 
 # Create and build encoder and decoder.
 encoder_a = Model.Encoder(n_lstm, batch_size)
-decoder_a = Model.DecoderAttention(n_lstm, batch_size, attention_func2)
+decoder_a = Model.DecoderAttention(n_lstm, batch_size, attention_func3)
 
 x = np.zeros((batch_size, 1, 5), dtype=np.float32)
 output = encoder_a(x)
@@ -57,7 +57,6 @@ def RunOptimization(source_seq, target_seq_in, target_seq_out, step):
     with tf.GradientTape() as tape:
         encoder_outputs = encoder_a(source_seq)
         states = encoder_outputs[1:]
-        history = encoder_outputs[0]
         y_sample = 0
         for t in range(decoder_length):
             # TODO scheduled sampling
@@ -65,10 +64,9 @@ def RunOptimization(source_seq, target_seq_in, target_seq_out, step):
                 decoder_in = tf.expand_dims(target_seq_in[:, t], 1)
             else:
                 decoder_in = tf.expand_dims(y_sample, 1)        
-            logit, lstm_out, de_state_h, de_state_c, _= decoder_a(decoder_in, states, history)
+            #decoder_in = tf.expand_dims(target_seq_in[:, t], 1)
+            logit, _, de_state_h, de_state_c, _= decoder_a(decoder_in, states, encoder_outputs[0])
             y_sample = logit
-            history_new = tf.expand_dims(lstm_out, 1)
-            history = tf.concat([history[:, 1:], history_new], 1)
             states = de_state_h, de_state_c
             # loss function : RSME 
             loss_0 = tf.keras.losses.MSE(target_seq_out[:, t, 1:3], logit[:, 1:3])
