@@ -228,4 +228,7 @@ class DecoderAttention(tf.keras.Model):
         # Finally, it is converted back to trajectory space: (batch_size, 5)
         logits = self.out(lstm_out)
 
-        return logits, state_h, state_c, alignment
+        return logits, lstm_out, state_h, state_c, alignment
+
+    
+

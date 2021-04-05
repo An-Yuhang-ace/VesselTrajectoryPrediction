@@ -73,7 +73,7 @@ def TestSeq2Seq(source_seq, target_seq_in, target_seq_out):
     return pred, loss.numpy()
 
 
-def TestAttentionSeq2Seq(source_seq, target_seq_in, target_seq_out):
+def TestAttentionSeq2SeqOld(source_seq, target_seq_in, target_seq_out):
     """Test restored attention_seq2seq model.
 
     Args:
@@ -94,13 +94,52 @@ def TestAttentionSeq2Seq(source_seq, target_seq_in, target_seq_out):
     # Decoder predicts the target_seq. decoder_in shape of [batch_size, 1, 5]
     decoder_in = tf.expand_dims(target_seq_in[:, 0], 1)
     for t in range(decoder_length):
-        logit, de_state_h, de_state_c, _= decoder_a(decoder_in, states, encoder_outputs[0])
+        logit, _, de_state_h, de_state_c, _= decoder_a(decoder_in, states, encoder_outputs[0])
         # logit shape of [batch_size, 5]
         decoder_in = tf.expand_dims(logit, 1)
         states = de_state_h, de_state_c
         # loss function : RSME TODO
         loss_0 = tf.keras.losses.MSE(target_seq_out[:, t, 1:3], logit[:, 1:3])
         loss += tf.sqrt(loss_0)# TODO
+        pred.append(logit[0, :])
+
+    loss = tf.reduce_mean(loss)  
+    loss = loss / decoder_length
+    pred = np.array(pred)
+    return pred, loss.numpy()
+
+
+def TestAttentionSeq2Seq(source_seq, target_seq_in, target_seq_out):
+    """Test restored attention_seq2seq model.
+
+    Args:
+        source_seq (shape of [batch_size, source_length, 5])
+        target_seq_in (shape of [batch_size, pred_length, 5])
+        target_seq_out (shape of [batch_size, pred_length, 5])
+
+    Returns:
+        pred [np.array(pred)]: The prediction of points. shape of [seq_length, 5].
+        loss [tensor]: Root Mean Squre Error loss of prediction of points.
+    """    
+    loss = 0
+    pred = []
+    decoder_length = target_seq_out.shape[1]
+    # Encode the source.
+    encoder_outputs = encoder_a(source_seq)
+    states = encoder_outputs[1:]
+    history = encoder_outputs[0]
+    # Decoder predicts the target_seq. decoder_in shape of [batch_size, 1, 5]
+    decoder_in = tf.expand_dims(target_seq_in[:, 0], 1)
+    for t in range(decoder_length):
+        logit, lstm_out, de_state_h, de_state_c, _= decoder_a(decoder_in, states, history)
+        # logit shape of [batch_size, 5]
+        decoder_in = tf.expand_dims(logit, 1)
+        history_new = tf.expand_dims(lstm_out, 1)
+        history = tf.concat([history[:, 1:], history_new], 1)
+        states = de_state_h, de_state_c
+        # loss function : RSME
+        loss_0 = tf.keras.losses.MSE(target_seq_out[:, t, 1:3], logit[:, 1:3])
+        loss += tf.sqrt(loss_0)
         pred.append(logit[0, :])
 
     loss = tf.reduce_mean(loss)  
@@ -152,8 +191,8 @@ def StepProcess(input, batch_size, seq_length, lstm_step):
 test_loader = TestLoader()
 test_loader.loadTestTrajectory("./DataSet/test_fix.csv")
 
-source_length = 20
-target_length = 10
+source_length = 120
+target_length = 60
 
 
 source_seq, source_coordinates, target_seq, target_coordinates= test_loader.getTestSeq2Seq(batch_size, source_length, target_length)
@@ -226,8 +265,8 @@ kml.save('./Visualization/true.kml')
 
 
 # pred coordomates
-delta_lng = pred_lstm[:, 1]
-delta_lat = pred_lstm[:, 2]
+delta_lng = pred_aseq2seq[:, 1]
+delta_lat =pred_aseq2seq[:, 2]
 delta_lng = delta_lng * (test_loader.max_train_data[1] - test_loader.min_train_data[1]) + test_loader.min_train_data[1]
 delta_lat = delta_lat * (test_loader.max_train_data[2] - test_loader.min_train_data[2]) + test_loader.min_train_data[2]
 delta_lng = delta_lng.tolist()
@@ -264,7 +303,7 @@ for i in range(len(lng_pred)):
     linestring.coords = [(lng1, lat1), (lng2, lat2)]
     lng1 = lng2
     lat1 = lat2
-kml.save('./Visualization/pred_lstm.kml')
+kml.save('./Visualization/pred_a.kml')
 
 # pred coordomates
 delta_lng = pred_seq2seq[:, 1]

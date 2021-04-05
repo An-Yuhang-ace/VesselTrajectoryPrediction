@@ -205,8 +205,6 @@ Trainable params: 118,661
 Non-trainable params: 0
 _________________________________________________________________
 
-若 attention_func = 'dot', attention层无参数
-若 attention_func = 'concat', attention层33025个参数
 
 超参数：batch_size, n_lstm, attention_func
 lstm层：units = n_lstm, dropout=0.1, return_sequences=True, return_state=True

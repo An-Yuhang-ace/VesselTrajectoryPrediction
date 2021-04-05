@@ -8,13 +8,13 @@ import Model
 
 # parameters for traning
 learnig_rate = 0.001
-num_batches = 10000
-batch_size = 1024
+num_batches = 20000
+batch_size = 512
 display_step = 50
 # parameters for seq2seq model
 n_lstm = 128
-encoder_length = 20
-decoder_length = 10
+encoder_length = 120
+decoder_length = 60
 
 # Choose Adam optimizer.
 optimizer = tf.keras.optimizers.Adam(learnig_rate)
@@ -54,19 +54,18 @@ def RunOptimization(source_seq, target_seq_in, target_seq_out, step):
         states = encoder_outputs[1:]
         y_sample = 0
         for t in range(decoder_length):
-            
-            if t == 0 or random.randint(0,1) == 0:
+            # scheduled sampling
+            if t == 0 or random.randint(0,1) == 2 :
                 decoder_in = tf.expand_dims(target_seq_in[:, t], 1)
             else:
                 decoder_in = tf.expand_dims(y_sample, 1)
-            
             #decoder_in = tf.expand_dims(target_seq_in[:, t], 1)
             logit, de_state_h, de_state_c= decoder(decoder_in, states)
             y_sample = logit
             states = de_state_h, de_state_c
-            # loss function : RSME TODO
+            # loss function : RSME
             loss_0 = tf.keras.losses.MSE(target_seq_out[:, t, 1:3], logit[:, 1:3])
-            loss += tf.sqrt(loss_0)# TODO
+            loss += tf.sqrt(loss_0)
         
     variables = encoder.trainable_variables + decoder.trainable_variables
     gradients = tape.gradient(loss, variables)

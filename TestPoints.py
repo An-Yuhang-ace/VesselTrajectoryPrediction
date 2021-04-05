@@ -70,7 +70,7 @@ def TestSeq2Seq(source_seq, target_seq_in, target_seq_out):
     loss = loss / decoder_length
     return loss
 
-
+'''
 def TestAttentionSeq2SeqOld(source_seq, target_seq_in, target_seq_out):
     """Test restored attention_seq2seq model.
 
@@ -100,6 +100,7 @@ def TestAttentionSeq2SeqOld(source_seq, target_seq_in, target_seq_out):
     loss = tf.reduce_mean(loss)  
     loss = loss / decoder_length
     return loss
+'''
 
 def TestAttentionSeq2Seq(source_seq, target_seq_in, target_seq_out):
     """Test restored attention_seq2seq model.
@@ -126,9 +127,9 @@ def TestAttentionSeq2Seq(source_seq, target_seq_in, target_seq_out):
         history_new = tf.expand_dims(lstm_out, 1)
         history = tf.concat([history[:, 1:], history_new], 1)
         states = de_state_h, de_state_c
-        # loss function : RSME TODO
+        # loss function : RSME 
         loss_0 = tf.keras.losses.MSE(target_seq_out[:, t, 1:3], logit[:, 1:3])
-        loss += tf.sqrt(loss_0)# TODO
+        loss += tf.sqrt(loss_0)
         
     loss = tf.reduce_mean(loss)  
     loss = loss / decoder_length
