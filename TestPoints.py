@@ -171,7 +171,6 @@ def StepProcess(input, batch_size, seq_length, lstm_step):
             output.append(seq_sub)
         return np.concatenate(output, axis=2)
 
-
 # Load test data
 test_loader = TestLoader()
 test_loader.loadTestTrajectory("./DataSet/test_fix.csv")

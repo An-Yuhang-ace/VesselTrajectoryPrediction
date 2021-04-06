@@ -8,7 +8,7 @@ from TrajectoryLoader import TrajectoryLoader
 
 # parameters for traning
 learnig_rate = 0.001
-num_batches = 400
+num_batches = 3000
 batch_size = 128
 display_step = 50
 # parameters for seq2seq model
@@ -41,7 +41,7 @@ checkpoint4.restore(tf.train.latest_checkpoint('./SaveEncoderAttention'))
 checkpoint5 = tf.train.Checkpoint(DecoderAttention = decoder_a)
 checkpoint5.restore(tf.train.latest_checkpoint('./SaveDecoderAttention'))
 
-#tensorboard
+# tensorboard
 summary_writer = tf.summary.create_file_writer('tensorboard')
 tf.summary.trace_on(profiler=True)
 # checkpoint
@@ -49,7 +49,6 @@ checkpoint1 = tf.train.Checkpoint(EncoderAttention = encoder_a)
 manager1 = tf.train.CheckpointManager(checkpoint1, directory = './SaveEncoderAttention', checkpoint_name = 'EncoderAttention.ckpt', max_to_keep = 10)
 checkpoint2 = tf.train.Checkpoint(DecoderAttention = decoder_a)
 manager2 = tf.train.CheckpointManager(checkpoint2, directory = './SaveDecoderAttention', checkpoint_name = 'DecoderAttention.ckpt', max_to_keep = 10)
-
 
 def RunOptimization(source_seq, target_seq_in, target_seq_out, step):
     loss = 0
@@ -82,13 +81,11 @@ def RunOptimization(source_seq, target_seq_in, target_seq_out, step):
     loss = loss / decoder_length
     with summary_writer.as_default():
         tf.summary.scalar("loss", loss.numpy(), step = step)   
-
     return loss
 
 # Load trajectory data.
 seq2seq_loader = TrajectoryLoader()
 seq2seq_loader.loadTrajectoryData("./DataSet/TrajectoryMillion.csv")
-
 
 for batch_index in range(1, num_batches+1):
     seq_encoder, seq_decoder = seq2seq_loader.getBatchSeq2Seq(batch_size, encoder_length, decoder_length)
@@ -100,7 +97,6 @@ for batch_index in range(1, num_batches+1):
         print("batch %d: loss %f" % (batch_index, loss.numpy()))
         path1 = manager1.save(checkpoint_number = batch_index)
         path2 = manager2.save(checkpoint_number = batch_index)
-
 
 with summary_writer.as_default():
     tf.summary.trace_export(name = "model_trace", step = 0, profiler_outdir = 'tensorboard')

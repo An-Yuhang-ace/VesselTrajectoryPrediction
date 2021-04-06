@@ -11,12 +11,10 @@ n_lstm = 128
 lstm_step = 6
 batch_size = 1
 
-
 # Restore LSTM model, seq2seq model and attention-seq2seq model.
 lstm_restored = Model.LSTM(n_lstm, lstm_step, batch_size) 
 checkpoint1 = tf.train.Checkpoint(LSTM_network = lstm_restored)
 checkpoint1.restore(tf.train.latest_checkpoint('./SaveLSTM'))
-
 
 encoder = Model.Encoder(n_lstm, batch_size)
 checkpoint2 = tf.train.Checkpoint(Encoder = encoder)
@@ -25,7 +23,6 @@ checkpoint2.restore(tf.train.latest_checkpoint('./SaveEncoder'))
 decoder = Model.Decoder(n_lstm, batch_size)
 checkpoint3 = tf.train.Checkpoint(Decoder = decoder)
 checkpoint3.restore(tf.train.latest_checkpoint('./SaveDecoder'))
-
 
 encoder_a = Model.Encoder(n_lstm, batch_size)
 checkpoint4 = tf.train.Checkpoint(EncoderAttention = encoder_a)
@@ -72,7 +69,7 @@ def TestSeq2Seq(source_seq, target_seq_in, target_seq_out):
     pred = np.array(pred)
     return pred, loss.numpy()
 
-
+'''
 def TestAttentionSeq2SeqOld(source_seq, target_seq_in, target_seq_out):
     """Test restored attention_seq2seq model.
 
@@ -107,7 +104,7 @@ def TestAttentionSeq2SeqOld(source_seq, target_seq_in, target_seq_out):
     loss = loss / decoder_length
     pred = np.array(pred)
     return pred, loss.numpy()
-
+'''
 
 def TestAttentionSeq2Seq(source_seq, target_seq_in, target_seq_out):
     """Test restored attention_seq2seq model.
@@ -186,14 +183,12 @@ def StepProcess(input, batch_size, seq_length, lstm_step):
             output.append(seq_sub)
         return np.concatenate(output, axis=2)
 
-
 # Load test data
 test_loader = TestLoader()
 test_loader.loadTestTrajectory("./DataSet/test_fix.csv")
 
 source_length = 120
 target_length = 60
-
 
 source_seq, source_coordinates, target_seq, target_coordinates= test_loader.getTestSeq2Seq(batch_size, source_length, target_length)
 
@@ -238,7 +233,6 @@ for i in range(1, len(lng_source)):
     lat1 = lat2
 kml.save('./Visualization/source.kml')
 
-
 # true coordinates
 lng_true = target_coordinates[0, :, 0]
 lat_true = target_coordinates[0, :, 1]
@@ -272,16 +266,9 @@ delta_lat = delta_lat * (test_loader.max_train_data[2] - test_loader.min_train_d
 delta_lng = delta_lng.tolist()
 delta_lat = delta_lat.tolist()
 
-delta_lng_true = target_seq_out[0, :, 1]
-delta_lat_true = target_seq_out[0, :, 2]
-delta_lng_true = delta_lng_true * (test_loader.max_train_data[1] - test_loader.min_train_data[1]) + test_loader.min_train_data[1]
-delta_lat_true = delta_lat_true * (test_loader.max_train_data[2] - test_loader.min_train_data[2]) + test_loader.min_train_data[2]
-delta_lng_true = delta_lng_true.tolist()
-delta_lat_true = delta_lat_true.tolist()
-
+# delta_lng, delta_lat to lng, lat
 lng0 = lng_true[0]
 lat0 = lat_true[0]
-
 lng_pred = []
 lat_pred = []
 for i in range(len(delta_lng)):
@@ -313,16 +300,8 @@ delta_lat = delta_lat * (test_loader.max_train_data[2] - test_loader.min_train_d
 delta_lng = delta_lng.tolist()
 delta_lat = delta_lat.tolist()
 
-delta_lng_true = target_seq_out[0, :, 1]
-delta_lat_true = target_seq_out[0, :, 2]
-delta_lng_true = delta_lng_true * (test_loader.max_train_data[1] - test_loader.min_train_data[1]) + test_loader.min_train_data[1]
-delta_lat_true = delta_lat_true * (test_loader.max_train_data[2] - test_loader.min_train_data[2]) + test_loader.min_train_data[2]
-delta_lng_true = delta_lng_true.tolist()
-delta_lat_true = delta_lat_true.tolist()
-
 lng0 = lng_true[0]
 lat0 = lat_true[0]
-
 lng_pred = []
 lat_pred = []
 for i in range(len(delta_lng)):

@@ -293,8 +293,9 @@ checkpoint保存训练后的参数，便于测试时重载。
 
 4. 定义Attention-Seq2Seq训练过程
 decoder段需要一个循环来实现时序预测，loss累加最后取平均。
-loss为解码器输出序列和真实序列的MSE（这里只选择Δt, Δlng, Δlat三维数据）
+loss为解码器输出序列和真实序列的MSE（这里只选择Δlng, Δlat二维数据）
 递归预测时将真实值用于预测（Scheduled Sampling有效性待验证）
+同时随着预测的进行，更新历史航迹数据。
 对编解码器参数进行优化
 
 5. 载入训练集进行训练
@@ -328,7 +329,7 @@ loss为解码器输出序列和真实序列的MSE（这里只选择Δt, Δlng, �
 4. 进行预测
 随机获取batch_size的连续轨迹序列，包括用于预测的源序列，用于验证的目标序列
 用于输出绝对坐标。
-分布用LSTM, Seq2Seq, AttentionSeq2Seq进行预测，loss为平均RMSE。
+分别用LSTM, Seq2Seq, AttentionSeq2Seq进行预测，loss为平均RMSE。
 
 ### TestVisual.py
 
@@ -361,14 +362,15 @@ loss为解码器输出序列和真实序列的MSE（这里只选择Δt, Δlng, �
     loss [tensor]: Root Mean Squre Error loss of prediction of points.
 
 3. 载入测试数据，设定测试参数
-载入测试轨迹集，设置进行预测的源序列长度和目标序列长度
+载入测试轨迹集，设置进行预测的源序列长度和目标序列长度。
+随机获取batch_size的连续轨迹序列，包括用于预测的源序列，用于验证的目标序列。
 
 4. 进行预测
-随机获取batch_size的连续轨迹序列，包括用于预测的源序列，用于验证的目标序列
-用于输出绝对坐标。
-进行预测，pred为预测结果，loss为平均MSE。
+分别用LSTM, Seq2Seq, AttentionSeq2Seq模型进行预测，loss为平均RMSE，结果打印。
+预测结果分布存于pred_lstm, pred_seq2seq, pred_aseq2seq，用于可视化。
 
 5. 绝对坐标恢复与可视化
-源坐标：载入，去归一，转为list，用simplekml可视化
-真实坐标：载入，去归一，转为list，用simplekml可视化
-预测坐标：载入，去归一，转为list，用simplekml可视化
+分布对源序列，真实目标序列，预测目标训练进行恢复与可视化。
+源坐标：载入，去归一，转为list，用simplekml可视化。
+真实坐标：载入，去归一，转为list，用simplekml可视化。
+预测坐标：载入，去归一，转为list，相对坐标转为绝对坐标，用simplekml可视化。

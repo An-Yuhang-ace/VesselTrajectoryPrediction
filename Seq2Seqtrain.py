@@ -5,10 +5,9 @@ import csv
 from TrajectoryLoader import TrajectoryLoader
 import Model
 
-
 # parameters for traning
 learnig_rate = 0.001
-num_batches = 20000
+num_batches = 3000
 batch_size = 512
 display_step = 50
 # parameters for seq2seq model
@@ -29,14 +28,14 @@ decoder(x, output[1:])
 encoder.summary()
 decoder.summary()
 
-# restore the lost checkpoint
+# restore the last checkpoint
 checkpoint2 = tf.train.Checkpoint(Encoder = encoder)
 checkpoint2.restore(tf.train.latest_checkpoint('./SaveEncoder'))
 
 checkpoint3 = tf.train.Checkpoint(Decoder = decoder)
 checkpoint3.restore(tf.train.latest_checkpoint('./SaveDecoder'))
 
-#tensorboard
+# tensorboard
 summary_writer = tf.summary.create_file_writer('tensorboard')
 tf.summary.trace_on(profiler=True)
 # checkpoint
@@ -44,7 +43,6 @@ checkpoint1 = tf.train.Checkpoint(Encoder = encoder)
 manager1 = tf.train.CheckpointManager(checkpoint1, directory = './SaveEncoder', checkpoint_name = 'Encoder.ckpt', max_to_keep = 10)
 checkpoint2 = tf.train.Checkpoint(Decoder = decoder)
 manager2 = tf.train.CheckpointManager(checkpoint2, directory = './SaveDecoder', checkpoint_name = 'Decoder.ckpt', max_to_keep = 10)
-
 
 def RunOptimization(source_seq, target_seq_in, target_seq_out, step):
     loss = 0
@@ -71,7 +69,6 @@ def RunOptimization(source_seq, target_seq_in, target_seq_out, step):
     gradients = tape.gradient(loss, variables)
     optimizer.apply_gradients(zip(gradients, variables)) 
      
-    
     loss = tf.reduce_mean(loss)  
     loss = loss / decoder_length
     with summary_writer.as_default():
@@ -93,7 +90,6 @@ for batch_index in range(1, num_batches+1):
         print("batch %d: loss %f" % (batch_index, loss.numpy()))
         path1 = manager1.save(checkpoint_number = batch_index)
         path2 = manager2.save(checkpoint_number = batch_index)
-
 
 with summary_writer.as_default():
     tf.summary.trace_export(name = "model_trace", step = 0, profiler_outdir = 'tensorboard')

@@ -16,7 +16,6 @@ seq_length = 20
 
 # Choose Adam optimizer.
 optimizer = tf.optimizers.Adam(learning_rate)
-#optimizer = tf.optimizers.SGD(learning_rate)
 
 # Create lstm model and build it.
 neural_net = Model.LSTM(n_lstm, lstm_step, batch_size)
@@ -25,7 +24,7 @@ x = np.zeros((batch_size, seq_length-lstm_step, lstm_step*5), dtype= np.float32)
 neural_net(x)
 neural_net.summary()
 
-# restore
+# restore the last checkpoint
 checkpoint1 = tf.train.Checkpoint(LSTM_network = neural_net)
 checkpoint1.restore(tf.train.latest_checkpoint('./SaveLSTM'))
 
@@ -35,7 +34,6 @@ tf.summary.trace_on(profiler=True)
 # checkpoint
 checkpoint = tf.train.Checkpoint(LSTM_network = neural_net)
 manager = tf.train.CheckpointManager(checkpoint, directory = './SaveLSTM', checkpoint_name = 'LSTMnetwork.ckpt', max_to_keep = 10)
-
 
 def StepProcess(input, batch_size, seq_length, lstm_step):
     if lstm_step == 1:
@@ -62,7 +60,6 @@ def RunOptimization(x, y, step):
     with summary_writer.as_default():
         tf.summary.scalar("loss", loss.numpy(), step = step)
     return loss
-
 
 # Load trajectory data.
 lstm_loader = TrajectoryLoader()
