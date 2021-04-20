@@ -118,15 +118,19 @@ def TestAttentionSeq2Seq(source_seq, target_seq_in, target_seq_out):
     # Encode the source.
     encoder_outputs = encoder_a(source_seq)
     states = encoder_outputs[1:]
+    state_h = states[0]
+    state_c = states[1]
+    history = encoder_outputs[0]
     history = encoder_outputs[0]
     # Decoder predicts the target_seq.
     decoder_in = tf.expand_dims(target_seq_in[:, 0], 1)
     for t in range(decoder_length):
-        logit, lstm_out, de_state_h, de_state_c, _= decoder_a(decoder_in, states, history)
+        logit, lstm_out, de_state_h, de_state_c, _= decoder_a(decoder_in, state_h, state_c, history)
         decoder_in = tf.expand_dims(logit, 1)
         history_new = tf.expand_dims(lstm_out, 1)
         history = tf.concat([history[:, 1:], history_new], 1)
-        states = de_state_h, de_state_c
+        state_h = de_state_h
+        state_c = de_state_c
         # loss function : RSME 
         loss_0 = tf.keras.losses.MSE(target_seq_out[:, t, 1:3], logit[:, 1:3])
         loss += tf.sqrt(loss_0)
@@ -175,8 +179,8 @@ def StepProcess(input, batch_size, seq_length, lstm_step):
 test_loader = TestLoader()
 test_loader.loadTestTrajectory("./DataSet/test_fix.csv")
 
-source_length = 120
-target_testset = [20, 40, 60, 80, 100, 120]
+source_length = 20
+target_testset = [1, 2, 3, 4, 5]
 
 for target_length in target_testset:
     source_seq, source_coordinates, target_seq, target_coordinates= test_loader.getTestSeq2Seq(batch_size, source_length, target_length)

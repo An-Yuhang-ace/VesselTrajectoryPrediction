@@ -82,9 +82,15 @@ class Encoder(tf.keras.Model):
         super().__init__()
         self.n_lstm = n_lstm
         self.batch_size = batch_size
-        self.lstm = tf.keras.layers.LSTM(self.n_lstm, return_sequences=True, return_state=True, activation=tf.nn.relu, dropout=0.1)
+        self.lstm = tf.keras.layers.LSTM(self.n_lstm, return_sequences=True, return_state=True, activation=tf.nn.relu)
+        #self.lstm = tf.keras.layers.LSTM(self.n_lstm, return_sequences=True, return_state=True, activation=tf.nn.relu, dropout=0.1)
 
-    @tf.function
+    @tf.function(
+        input_signature=[
+            tf.TensorSpec([None, 120, 5], tf.float32)
+        ]
+    )
+    #@tf.function
     def call(self, sequence):
         states = self.init_states()
         # sequence.shape: (batch_size, encoder_length, 5), output.shape: (batch_size, encoder_length, n_lstm)
@@ -146,6 +152,7 @@ class Decoder(tf.keras.Model):
         self.lstm = tf.keras.layers.LSTM(self.n_lstm, return_sequences=True, return_state=True, activation=tf.nn.relu, dropout=0.1)
         self.out = tf.keras.layers.Dense(units = 5, name="output_layer")
 
+    @tf.function
     def call(self, seq_in, state):
         # seq_in.shape: (batch_size, 1, 5), lstm_out.shape：(batch_size, 1, n_lstm)
         lstm_out, state_h, state_c = self.lstm(seq_in, initial_state=state)
@@ -174,7 +181,8 @@ class Attention(tf.keras.Model):
             self.wa = tf.keras.layers.Dense(n_lstm, activation='tanh')
             self.va = tf.keras.layers.Dense(1)
     
-    def call(self, decoder_output, encoder_output):
+    @tf.function
+    def __call__(self, decoder_output, encoder_output):
         if self.attention_func == 'dot':
             # dot score function: decoder_output (dot) encoder_output
             # decoder_output.shape: (batch_size, 1, n_lstm), encoder_output.shape: (batch_size, encoder_length, n_lstm)
@@ -211,13 +219,22 @@ class DecoderAttention(tf.keras.Model):
         self.attention = Attention(n_lstm, attention_func)
         self.n_lstm = n_lstm
         self.batch_size = batch_size
-        self.lstm = tf.keras.layers.LSTM(self.n_lstm, return_sequences=True, return_state=True, activation=tf.nn.relu, dropout=0.1)
+        #self.lstm = tf.keras.layers.LSTM(self.n_lstm, return_sequences=True, return_state=True, activation=tf.nn.relu, dropout=0.1)
+        self.lstm = tf.keras.layers.LSTM(self.n_lstm, return_sequences=True, return_state=True, activation=tf.nn.relu)
         self.wc = tf.keras.layers.Dense(n_lstm, activation='tanh', name="wc_layer")
         self.out = tf.keras.layers.Dense(units = 5, name="output_layer")
 
-    def call(self, seq_in, state, encoder_output):
+    @tf.function(
+        input_signature=[
+            tf.TensorSpec([None, 1, 5], tf.float32),
+            tf.TensorSpec([None, 128], tf.float32),
+            tf.TensorSpec([None, 128], tf.float32),
+            tf.TensorSpec([None, 120, 128], tf.float32)
+        ]
+    )
+    def call(self, seq_in, state_h, state_c, encoder_output):
         # lstm_out.shape: (batch_size, 1, n_lstm)
-        lstm_out, state_h, state_c = self.lstm(seq_in, initial_state=state)
+        lstm_out, state_h, state_c = self.lstm(seq_in, initial_state=(state_h, state_c))
         # context.shape: (batch_size, 1, n_lstm)
         # alignment.shape: (batch_size, 1, seq_length)
         context, alignment = self.attention(lstm_out, encoder_output)
@@ -230,5 +247,26 @@ class DecoderAttention(tf.keras.Model):
 
         return logits, lstm_out, state_h, state_c, alignment
 
-    
+
+if __name__ == '__main__':
+    # network parameters
+    n_lstm = 128
+    lstm_step = 6
+    batch_size = 1
+
+    # Restore the checkpoints of Encoder and DecoderAttention.
+    encoder_a = Encoder(n_lstm, batch_size)
+    checkpoint4 = tf.train.Checkpoint(EncoderAttention = encoder_a)
+    checkpoint4.restore(tf.train.latest_checkpoint('./SaveEncoderAttention'))
+
+    decoder_a = DecoderAttention(n_lstm, batch_size, 'general')
+    checkpoint5 = tf.train.Checkpoint(DecoderAttention = decoder_a)
+    checkpoint5.restore(tf.train.latest_checkpoint('./SaveDecoderAttention'))
+
+    # Save two models with input signature.
+    tf.saved_model.save(encoder_a, './SavedModel/Save1', signatures={"call": encoder_a.call})
+    tf.saved_model.save(decoder_a, './SavedModel/Save2', signatures={"call": decoder_a.call})
+
+
+
 

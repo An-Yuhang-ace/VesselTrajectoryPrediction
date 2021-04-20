@@ -69,6 +69,8 @@ def TestSeq2Seq(source_seq, target_seq_in, target_seq_out):
     pred = np.array(pred)
     return pred, loss.numpy()
 
+
+
 '''
 def TestAttentionSeq2SeqOld(source_seq, target_seq_in, target_seq_out):
     """Test restored attention_seq2seq model.
@@ -124,16 +126,19 @@ def TestAttentionSeq2Seq(source_seq, target_seq_in, target_seq_out):
     # Encode the source.
     encoder_outputs = encoder_a(source_seq)
     states = encoder_outputs[1:]
+    state_h = states[0]
+    state_c = states[1]
     history = encoder_outputs[0]
     # Decoder predicts the target_seq. decoder_in shape of [batch_size, 1, 5]
     decoder_in = tf.expand_dims(target_seq_in[:, 0], 1)
     for t in range(decoder_length):
-        logit, lstm_out, de_state_h, de_state_c, _= decoder_a(decoder_in, states, history)
+        logit, lstm_out, de_state_h, de_state_c, _= decoder_a(decoder_in, state_h, state_c, history)
         # logit shape of [batch_size, 5]
         decoder_in = tf.expand_dims(logit, 1)
         history_new = tf.expand_dims(lstm_out, 1)
         history = tf.concat([history[:, 1:], history_new], 1)
-        states = de_state_h, de_state_c
+        state_h = de_state_h
+        state_c = de_state_c
         # loss function : RSME
         loss_0 = tf.keras.losses.MSE(target_seq_out[:, t, 1:3], logit[:, 1:3])
         loss += tf.sqrt(loss_0)
@@ -143,6 +148,8 @@ def TestAttentionSeq2Seq(source_seq, target_seq_in, target_seq_out):
     loss = loss / decoder_length
     pred = np.array(pred)
     return pred, loss.numpy()
+
+
 
 def TestLSTM(test_x, test_y):
     """Test restored lstm model.
@@ -209,6 +216,10 @@ print("Result of Seq2Seq_%d: %f" % (target_length, loss))
 pred_aseq2seq, loss = TestAttentionSeq2Seq(source_seq, target_seq_in, target_seq_out)
 print("Result of Seq2SeqAttention_%d: %f" % (target_length, loss))
 
+# 计算图格式
+#pred_aseq2seq = PreAttentionSeq2Seq(source_seq, target_seq_in[:, 0], target_length)
+#pred_aseq2seq = np.array(pred_aseq2seq)
+
 
 # Coordinates recovery: denormalize and convert to list.
 
@@ -260,7 +271,7 @@ kml.save('./Visualization/true.kml')
 
 # pred coordomates
 delta_lng = pred_aseq2seq[:, 1]
-delta_lat =pred_aseq2seq[:, 2]
+delta_lat = pred_aseq2seq[:, 2]
 delta_lng = delta_lng * (test_loader.max_train_data[1] - test_loader.min_train_data[1]) + test_loader.min_train_data[1]
 delta_lat = delta_lat * (test_loader.max_train_data[2] - test_loader.min_train_data[2]) + test_loader.min_train_data[2]
 delta_lng = delta_lng.tolist()
